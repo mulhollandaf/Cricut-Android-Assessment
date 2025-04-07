@@ -12,6 +12,15 @@
 ## Welcome
 We're glad you're taking the time to interview with Cricut! This take-home challenge is an opportunity for you to showcase your Android development skills. Please feel free to use the resources you'd typically rely on in your day-to-day work. We encourage you to research, experiment, and enjoy the process.
 
+## Assessment Overview
+This challenge involves building a small Android quiz application. The primary goal is to assess your approach to application architecture, UI implementation with Jetpack Compose, and state management within the Android ecosystem.
+
+**Key Steps:**
+1.  **Fork** the provided repository to your personal GitHub account.
+2.  **Verify Initial Setup:** Ensure the forked repository builds and runs correctly in Android Studio. The initial state of the repository should display a basic placeholder or "hello world" screen.
+3.  Implement the quiz app features detailed in the "Quiz App Challenge" section below, starting from the verified base state.
+4.  When finished, submit a link to your forked repository (please do not create a pull request).
+
 ## Quiz App Challenge
 
 Your task is to develop a small Android application using Android Studio. Please implement the code within your **fork** of the provided repository, adhering to these specifications:
