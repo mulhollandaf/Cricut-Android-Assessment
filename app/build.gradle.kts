@@ -1,3 +1,5 @@
+import com.android.sdklib.AndroidVersion.VersionCodes.VANILLA_ICE_CREAM
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -9,12 +11,12 @@ plugins {
 
 android {
     namespace = "com.cricut.androidassessment"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.cricut.androidassessment"
         minSdk = 24
-        targetSdk = 35
+        targetSdk = VANILLA_ICE_CREAM
         versionCode = 1
         versionName = "1.0"
 
