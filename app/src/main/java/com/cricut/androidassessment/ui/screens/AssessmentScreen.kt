@@ -93,6 +93,8 @@ fun AssessmentScreen(
                         onAnswerChange = { viewModel.onAnswerChanged(currentQuestion.id, it) }
                     )
                 }
+
+                null -> {}
             }
         }
         // Navigation Buttons
@@ -137,7 +139,9 @@ fun QuestionContent(
         Text(
             text = question.text,
             style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier.padding(bottom = 16.dp).align(Alignment.CenterHorizontally)
+            modifier = Modifier
+                .padding(bottom = 16.dp)
+                .align(Alignment.CenterHorizontally)
         )
         question.options.forEach { option ->
             val isSelected = currentAnswer == option
@@ -169,7 +173,9 @@ fun QuestionContent(
         Text(
             text = question.text,
             style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier.padding(bottom = 16.dp).align(Alignment.CenterHorizontally)
+            modifier = Modifier
+                .padding(bottom = 16.dp)
+                .align(Alignment.CenterHorizontally)
         )
         question.options.forEach { option ->
             val isSelected = currentAnswer == option
@@ -196,12 +202,16 @@ fun QuestionContent(
     Column(
         horizontalAlignment = Alignment.Start, // Align checkboxes to the start
         verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.padding(16.dp).fillMaxWidth()
+        modifier = Modifier
+            .padding(16.dp)
+            .fillMaxWidth()
     ) {
         Text(
             text = question.text,
             style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier.padding(bottom = 16.dp).align(Alignment.CenterHorizontally)
+            modifier = Modifier
+                .padding(bottom = 16.dp)
+                .align(Alignment.CenterHorizontally)
         )
 
         question.options.forEach { option ->
@@ -234,7 +244,9 @@ fun QuestionContent(
         Text(
             text = question.text,
             style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier.padding(bottom = 16.dp).align(Alignment.CenterHorizontally)
+            modifier = Modifier
+                .padding(bottom = 16.dp)
+                .align(Alignment.CenterHorizontally)
         )
         TextField(
             value = currentAnswer,

@@ -42,6 +42,7 @@ android {
     buildFeatures {
         compose = true
     }
+    @Suppress("UnstableApiUsage")
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.15"
     }
@@ -90,6 +91,8 @@ dependencies {
     androidTestImplementation(libs.mockito.android)
     androidTestImplementation(libs.mockito.kotlin)
     androidTestImplementation(libs.hilt.android.testing)
+    testImplementation(libs.turbine)
+
     kspAndroidTest(libs.hilt.android.compiler)
 
     debugImplementation(libs.compose.ui.tooling)
