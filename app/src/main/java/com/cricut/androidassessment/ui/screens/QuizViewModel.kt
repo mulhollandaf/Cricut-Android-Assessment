@@ -18,6 +18,9 @@ class QuizViewModel : ViewModel() {
     private val _currentQuestionIndex = MutableStateFlow(0)
     val currentQuestionIndex: StateFlow<Int> = _currentQuestionIndex.asStateFlow()
 
+    private val _score = MutableStateFlow<Int?>(null)
+    val score: StateFlow<Int?> = _score.asStateFlow()
+
     val currentQuestion: Question
         get() = questions[currentQuestionIndex.value]
 
@@ -57,5 +60,31 @@ class QuizViewModel : ViewModel() {
         if (_currentQuestionIndex.value > 0) {
             _currentQuestionIndex.update { it - 1 }
         }
+    }
+
+    fun submitAnswers() {
+        // Check to see if the answers submitted are the same as the answers to the questions
+        val correctAnswers = _questions.associate { it.id to it.correctAnswer }
+        var score = 0
+        _answers.value.forEach { (questionId, submittedAnswer) ->
+            val correctAnswer = correctAnswers[questionId]
+            if (correctAnswer != null) {
+                if (correctAnswer is Set<*> && submittedAnswer is Set<*>) {
+                    if (correctAnswer.containsAll(submittedAnswer) && submittedAnswer.containsAll(correctAnswer)) {
+                        score++
+                    }
+                } else if (correctAnswer == submittedAnswer) {
+                    score++
+                }
+            }
+        }
+        println("Your score is $score out of ${_questions.size}")
+        _score.value = score
+    }
+
+    fun restartQuiz() {
+        _answers.value = emptyMap()
+        _currentQuestionIndex.value = 0
+        _score.value = null
     }
 }

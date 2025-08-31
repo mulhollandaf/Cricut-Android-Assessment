@@ -30,6 +30,7 @@ fun AssessmentScreen(
     val questions = viewModel.questions
     val currentQuestion = viewModel.currentQuestion
     val allAnswers by viewModel.answers.collectAsState() // This holds the state
+    val score by viewModel.score.collectAsState()
 
     Column(
         modifier = modifier
@@ -38,41 +39,60 @@ fun AssessmentScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
     ) {
-        // Question Area
-        when (currentQuestion) { // Use 'val currentQ' for smart casting
-            is TrueFalseQuestion -> {
-                val currentAnswer = allAnswers[currentQuestion.id] as? String ?: ""
-                QuestionContent(
-                    question = currentQuestion,
-                    currentAnswer = currentAnswer,
-                    onAnswerChange = { viewModel.onAnswerChanged(currentQuestion.id, it) })
-            }
-            is MultipleChoiceQuestion -> {
-                val currentAnswer = allAnswers[currentQuestion.id] as? String ?: ""
-                QuestionContent(
-                    question = currentQuestion,
-                    currentAnswer = currentAnswer,
-                    onAnswerChange = { viewModel.onAnswerChanged(currentQuestion.id, it) }
+        if (score != null) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Display Score
+                Text(
+                    text = "Your Score: $score / ${questions.size}",
+                    style = MaterialTheme.typography.headlineMedium
                 )
+                // Restart Button
+                Button(
+                    onClick = { viewModel.restartQuiz() }
+                ) {
+                    Text("Restart Quiz")
+                }
             }
-            is MultipleSelectionQuestion -> {
-                // Ensure you are using the correct QuestionContent overload if you have multiple
-                val currentSelectedAnswers = allAnswers[currentQuestion.id] as? Set<String> ?: emptySet()
-                QuestionContent(
-                    question = currentQuestion,
-                    currentSelectedAnswers = currentSelectedAnswers, // This is passed
-                    onAnswerSelected = { option ->
-                        viewModel.onMultipleAnswersChanged(currentQuestion.id, option)
-                    }
-                )
-            }
-            is OpenEndedQuestion -> {
-                val currentAnswer = allAnswers[currentQuestion.id] as? String ?: ""
-                QuestionContent(
-                    question = currentQuestion,
-                    currentAnswer = currentAnswer,
-                    onAnswerChange = { viewModel.onAnswerChanged(currentQuestion.id, it) }
-                )
+        } else {
+            // Question Area
+            when (currentQuestion) { // Use 'val currentQ' for smart casting
+                is TrueFalseQuestion -> {
+                    val currentAnswer = allAnswers[currentQuestion.id] as? String ?: ""
+                    QuestionContent(
+                        question = currentQuestion,
+                        currentAnswer = currentAnswer,
+                        onAnswerChange = { viewModel.onAnswerChanged(currentQuestion.id, it) })
+                }
+                is MultipleChoiceQuestion -> {
+                    val currentAnswer = allAnswers[currentQuestion.id] as? String ?: ""
+                    QuestionContent(
+                        question = currentQuestion,
+                        currentAnswer = currentAnswer,
+                        onAnswerChange = { viewModel.onAnswerChanged(currentQuestion.id, it) }
+                    )
+                }
+                is MultipleSelectionQuestion -> {
+                    // Ensure you are using the correct QuestionContent overload if you have multiple
+                    val currentSelectedAnswers = allAnswers[currentQuestion.id] as? Set<String> ?: emptySet()
+                    QuestionContent(
+                        question = currentQuestion,
+                        currentSelectedAnswers = currentSelectedAnswers, // This is passed
+                        onAnswerSelected = { option ->
+                            viewModel.onMultipleAnswersChanged(currentQuestion.id, option)
+                        }
+                    )
+                }
+                is OpenEndedQuestion -> {
+                    val currentAnswer = allAnswers[currentQuestion.id] as? String ?: ""
+                    QuestionContent(
+                        question = currentQuestion,
+                        currentAnswer = currentAnswer,
+                        onAnswerChange = { viewModel.onAnswerChanged(currentQuestion.id, it) }
+                    )
+                }
             }
         }
         // Navigation Buttons
@@ -82,12 +102,20 @@ fun AssessmentScreen(
         ) {
             Button(
                 onClick = { viewModel.onPreviousClicked() },
-                enabled = currentQuestionIndex > 0
+                enabled = currentQuestionIndex > 0 && score == null // Disable if score is shown
+
             ) {
                 Text("Previous")
             }
             Button(
-                onClick = { viewModel.onNextClicked() }
+                onClick = {
+                    if (currentQuestionIndex < questions.size - 1) {
+                        viewModel.onNextClicked()
+                    } else {
+                        viewModel.submitAnswers()
+                    }
+                },
+                enabled = score == null // Disable if score is shown
             ) {
                 Text(if (currentQuestionIndex < questions.size - 1) "Next" else "Submit")
             }
