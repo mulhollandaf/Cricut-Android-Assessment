@@ -1,16 +1,19 @@
 package com.cricut.androidassessment.ui.screens
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 
-
-// ViewModel to hold the state
 class QuizViewModel : ViewModel() {
-    private val _questions = QuizRepo().questions
-    val questions: List<Question> = _questions
+    private val _questions = MutableStateFlow<List<Question>>(emptyList())
+    val questions: StateFlow<List<Question>> = _questions.asStateFlow()
+
+    var numberOfQuestions: Int = 0
 
     private val _answers = MutableStateFlow<Map<Int, Any>>(emptyMap())
     val answers: StateFlow<Map<Int, Any>> = _answers.asStateFlow()
@@ -18,11 +21,16 @@ class QuizViewModel : ViewModel() {
     private val _currentQuestionIndex = MutableStateFlow(0)
     val currentQuestionIndex: StateFlow<Int> = _currentQuestionIndex.asStateFlow()
 
+    init {
+        QuizRepo().getQuestions().onEach { _questions.value = it }.launchIn(viewModelScope)
+        numberOfQuestions = questions.value.size
+    }
+
     private val _score = MutableStateFlow<Int?>(null)
     val score: StateFlow<Int?> = _score.asStateFlow()
 
     val currentQuestion: Question
-        get() = questions[currentQuestionIndex.value]
+        get() = questions.value[currentQuestionIndex.value]
 
     fun onAnswerChanged(questionId: Int, answer: String) {
         _answers.update { currentAnswers ->
@@ -48,7 +56,7 @@ class QuizViewModel : ViewModel() {
     }
 
     fun onNextClicked() {
-        if (_currentQuestionIndex.value < questions.size - 1) {
+        if (_currentQuestionIndex.value < numberOfQuestions - 1) {
             _currentQuestionIndex.update { it + 1 }
         } else {
             // Handle form submission or completion
@@ -64,7 +72,7 @@ class QuizViewModel : ViewModel() {
 
     fun submitAnswers() {
         // Check to see if the answers submitted are the same as the answers to the questions
-        val correctAnswers = _questions.associate { it.id to it.correctAnswer }
+        val correctAnswers = _questions.value.associate { it.id to it.correctAnswer }
         var score = 0
         _answers.value.forEach { (questionId, submittedAnswer) ->
             val correctAnswer = correctAnswers[questionId]
@@ -78,7 +86,6 @@ class QuizViewModel : ViewModel() {
                 }
             }
         }
-        println("Your score is $score out of ${_questions.size}")
         _score.value = score
     }
 

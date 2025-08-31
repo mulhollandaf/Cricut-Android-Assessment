@@ -46,7 +46,7 @@ fun AssessmentScreen(
             ) {
                 // Display Score
                 Text(
-                    text = "Your Score: $score / ${questions.size}",
+                    text = "Your Score: $score / ${viewModel.numberOfQuestions}",
                     style = MaterialTheme.typography.headlineMedium
                 )
                 // Restart Button
@@ -109,7 +109,7 @@ fun AssessmentScreen(
             }
             Button(
                 onClick = {
-                    if (currentQuestionIndex < questions.size - 1) {
+                    if (currentQuestionIndex < questions.value.size - 1) {
                         viewModel.onNextClicked()
                     } else {
                         viewModel.submitAnswers()
@@ -117,7 +117,7 @@ fun AssessmentScreen(
                 },
                 enabled = score == null // Disable if score is shown
             ) {
-                Text(if (currentQuestionIndex < questions.size - 1) "Next" else "Submit")
+                Text(if (currentQuestionIndex < viewModel.numberOfQuestions - 1) "Next" else "Submit")
             }
         }
     }
@@ -252,8 +252,7 @@ private fun PreviewTrueFalse() {
         QuestionContent(
             question = QuizRepo().trueFalseQuestion,
             currentAnswer = "true",
-            {}
-        )
+        ) {}
     }
 }
 
@@ -265,8 +264,7 @@ private fun PreviewMultipleChoice() {
         QuestionContent(
             question = QuizRepo().multipleChoiceQuestion,
             currentAnswer = "C++",
-            {}
-        )
+        ) {}
     }
 }
 
@@ -277,9 +275,8 @@ private fun PreviewMultipleSelect() {
         QuestionContent(
             QuizRepo().multipleSelectionQuestion,
             currentSelectedAnswers = setOf("Kotlin", "Java"),
-            onAnswerSelected = {},
         )
-
+        {}
     }
 }
 
@@ -290,9 +287,8 @@ private fun PreviewOpenEnded() {
         QuestionContent(
             QuizRepo().openEndedQuestion,
             currentAnswer = "Because",
-            onAnswerChange = {},
         )
-
+        {}
     }
 }
 
