@@ -6,14 +6,22 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.test.*
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
 import org.junit.After
-import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Rule
-import org.junit.Test
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 
 @ExperimentalCoroutinesApi
 class QuizViewModelTest {
@@ -55,7 +63,7 @@ class QuizViewModelTest {
         assertEquals(0, viewModel.currentQuestionIndex.value)
         assertEquals(null, viewModel.score.value)
         assertEquals(sampleQuestions.size, viewModel.numberOfQuestions)
-        assertFalse("Questions should not be empty after loading", viewModel.questions.value.isEmpty())
+        assertEquals(false, viewModel.questions.value.isEmpty(),"Questions should not be empty after loading")
         assertEquals(sampleQuestions, viewModel.questions.value)
     }
 
@@ -89,7 +97,7 @@ class QuizViewModelTest {
 
 
         viewModel.onNextClicked() 
-        assertEquals("Should stay at the last question index", 0, viewModel.currentQuestionIndex.value) 
+        assertEquals(0, viewModel.currentQuestionIndex.value, "Should stay at the last question index")
     }
 
 
@@ -187,7 +195,7 @@ class QuizViewModelTest {
         viewModel.onMultipleAnswersChanged(1, "B")
 
         viewModel.submitAnswers()
-        assertEquals("Only Q1 is fully correct",1, viewModel.score.value)
+        assertEquals(1, viewModel.score.value, "Only Q1 is fully correct")
     }
 
     @Test
@@ -203,7 +211,7 @@ class QuizViewModelTest {
         viewModel.onMultipleAnswersChanged(1, "C")
 
         viewModel.submitAnswers()
-        assertEquals("Only Q1 is fully correct",0, viewModel.score.value)
+        assertEquals(0, viewModel.score.value, "Only Q1 is fully correct")
     }
 
 
@@ -222,13 +230,13 @@ class QuizViewModelTest {
         viewModel.submitAnswers()
         
         assertNotEquals(0, viewModel.currentQuestionIndex.value)
-        assertNotEquals(emptyMap<Int, Any>(), viewModel.answers.value)
+        assertNotEquals(emptyMap(), viewModel.answers.value)
         assertNotNull(viewModel.score.value)
 
         viewModel.restartQuiz()
 
         assertEquals(0, viewModel.currentQuestionIndex.value)
-        assertEquals(emptyMap<Int, Any>(), viewModel.answers.value)
+        assertEquals(emptyMap(), viewModel.answers.value)
         assertNull(viewModel.score.value)
     }
 
