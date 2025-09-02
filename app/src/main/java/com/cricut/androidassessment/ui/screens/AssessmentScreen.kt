@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -58,43 +59,43 @@ fun AssessmentScreen(
             }
         } else {
             // Question Area
-            when (currentQuestion) { // Use 'val currentQ' for smart casting
-                is TrueFalseQuestion -> {
-                    val currentAnswer = allAnswers[currentQuestion.id] as? String ?: ""
-                    QuestionContent(
-                        question = currentQuestion,
-                        currentAnswer = currentAnswer,
-                        onAnswerChange = { viewModel.onAnswerChanged(currentQuestion.id, it) })
+            currentQuestion?.let { question ->
+                when (question) {
+                    is TrueFalseQuestion -> {
+                        val currentAnswer = allAnswers[question.id] as? String ?: ""
+                        SingleSelectOptionQuestionContent(
+                            questionText = question.text,
+                            options = question.options.toSet(),
+                            currentAnswer = currentAnswer,
+                            onAnswerChange = { viewModel.onAnswerChanged(question.id, it) }
+                        )
+                    }
+                    is MultipleChoiceQuestion -> {
+                        val currentAnswer = allAnswers[question.id] as? String ?: ""
+                        SingleSelectOptionQuestionContent(
+                            questionText = question.text,
+                            options = question.options.toSet(),
+                            currentAnswer = currentAnswer,
+                            onAnswerChange = { viewModel.onAnswerChanged(question.id, it) }
+                        )
+                    }
+                    is MultipleSelectionQuestion -> {
+                        val currentAnswer = allAnswers[question.id] as? String ?: ""
+                        QuestionContent(
+                            question = question,
+                            currentSelectedAnswers = currentAnswer.split(",").toSet(),
+                            onAnswerSelected = { viewModel.onAnswerChanged(question.id, it) }
+                        )
+                    }
+                    is OpenEndedQuestion -> {
+                        val currentAnswer = allAnswers[question.id] as? String ?: ""
+                        QuestionContent(
+                            question = question,
+                            currentAnswer = currentAnswer,
+                            onAnswerChange = { viewModel.onAnswerChanged(question.id, it) }
+                        )
+                    }
                 }
-                is MultipleChoiceQuestion -> {
-                    val currentAnswer = allAnswers[currentQuestion.id] as? String ?: ""
-                    QuestionContent(
-                        question = currentQuestion,
-                        currentAnswer = currentAnswer,
-                        onAnswerChange = { viewModel.onAnswerChanged(currentQuestion.id, it) }
-                    )
-                }
-                is MultipleSelectionQuestion -> {
-                    // Ensure you are using the correct QuestionContent overload if you have multiple
-                    val currentSelectedAnswers = allAnswers[currentQuestion.id] as? Set<String> ?: emptySet()
-                    QuestionContent(
-                        question = currentQuestion,
-                        currentSelectedAnswers = currentSelectedAnswers, // This is passed
-                        onAnswerSelected = { option ->
-                            viewModel.onMultipleAnswersChanged(currentQuestion.id, option)
-                        }
-                    )
-                }
-                is OpenEndedQuestion -> {
-                    val currentAnswer = allAnswers[currentQuestion.id] as? String ?: ""
-                    QuestionContent(
-                        question = currentQuestion,
-                        currentAnswer = currentAnswer,
-                        onAnswerChange = { viewModel.onAnswerChanged(currentQuestion.id, it) }
-                    )
-                }
-
-                null -> {}
             }
         }
         // Navigation Buttons
@@ -126,43 +127,18 @@ fun AssessmentScreen(
 }
 
 @Composable
-fun QuestionContent(
-    question: TrueFalseQuestion,
-    currentAnswer: String, // This holds the selected option string or ""
-    onAnswerChange: (String) -> Unit
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.padding(16.dp)
-    ) {
-        Text(
-            text = question.text,
-            style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier
-                .padding(bottom = 16.dp)
-                .align(Alignment.CenterHorizontally)
-        )
-        question.options.forEach { option ->
-            val isSelected = currentAnswer == option
-            Button(
-                onClick = { onAnswerChange(option) },
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
-                    contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
-                )
-            ) {
-                Text(option)
-            }
-        }
-    }
+private fun getSelectedButtonColors(isSelected: Boolean): ButtonColors {
+    return ButtonDefaults.buttonColors(
+        containerColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
+        contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+    )
 }
 
 @Composable
-fun QuestionContent(
-    question: MultipleChoiceQuestion,
-    currentAnswer: String, // This holds the selected option string or ""
+private fun SingleSelectOptionQuestionContent(
+    questionText: String,
+    options: Set<String>,
+    currentAnswer: String,
     onAnswerChange: (String) -> Unit
 ) {
     Column(
@@ -171,21 +147,18 @@ fun QuestionContent(
         modifier = Modifier.padding(16.dp)
     ) {
         Text(
-            text = question.text,
+            text = questionText,
             style = MaterialTheme.typography.headlineSmall,
             modifier = Modifier
                 .padding(bottom = 16.dp)
                 .align(Alignment.CenterHorizontally)
         )
-        question.options.forEach { option ->
+        options.forEach { option ->
             val isSelected = currentAnswer == option
             Button(
                 onClick = { onAnswerChange(option) },
                 modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
-                    contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
-                )
+                colors = getSelectedButtonColors(isSelected = isSelected)
             ) {
                 Text(option)
             }
@@ -196,11 +169,11 @@ fun QuestionContent(
 @Composable
 fun QuestionContent(
     question: MultipleSelectionQuestion,
-    currentSelectedAnswers: Set<String>, // Set of selected option strings
+    currentSelectedAnswers: Set<String>,
     onAnswerSelected: (option: String) -> Unit
 ) {
     Column(
-        horizontalAlignment = Alignment.Start, // Align checkboxes to the start
+        horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier
             .padding(16.dp)
@@ -217,12 +190,9 @@ fun QuestionContent(
         question.options.forEach { option ->
             val isSelected = currentSelectedAnswers.contains(option)
             Button(
-                onClick = { onAnswerSelected(option)},
+                onClick = { onAnswerSelected(option) },
                 modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
-                    contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
-                )
+                colors = getSelectedButtonColors(isSelected = isSelected)
             ) {
                 Text(option)
             }
@@ -233,7 +203,7 @@ fun QuestionContent(
 @Composable
 fun QuestionContent(
     question: OpenEndedQuestion,
-    currentAnswer: String, // This holds the selected answer ("TRUE" or "FALSE" or "")
+    currentAnswer: String,
     onAnswerChange: (String) -> Unit
 ) {
     Column(
@@ -261,9 +231,10 @@ fun QuestionContent(
 @Composable
 private fun PreviewTrueFalse() {
     MaterialTheme {
-        QuestionContent(
-            question = QuizRepo().trueFalseQuestion,
-            currentAnswer = "true",
+        SingleSelectOptionQuestionContent(
+            questionText = QuizRepo().trueFalseQuestion.text,
+            options = QuizRepo().trueFalseQuestion.options.toSet(),
+            currentAnswer = "True",
         ) {}
     }
 }
@@ -272,10 +243,11 @@ private fun PreviewTrueFalse() {
 @Preview(showBackground = true)
 @Composable
 private fun PreviewMultipleChoice() {
-    MaterialTheme { // Ensure you have a MaterialTheme wrapper
-        QuestionContent(
-            question = QuizRepo().multipleChoiceQuestion,
-            currentAnswer = "C++",
+    MaterialTheme {
+        SingleSelectOptionQuestionContent(
+            questionText = QuizRepo().multipleChoiceQuestion.text,
+            options = QuizRepo().multipleChoiceQuestion.options.toSet(),
+            currentAnswer = "Java",
         ) {}
     }
 }
@@ -287,8 +259,7 @@ private fun PreviewMultipleSelect() {
         QuestionContent(
             QuizRepo().multipleSelectionQuestion,
             currentSelectedAnswers = setOf("Kotlin", "Java"),
-        )
-        {}
+        ) {}
     }
 }
 
@@ -299,8 +270,7 @@ private fun PreviewOpenEnded() {
         QuestionContent(
             QuizRepo().openEndedQuestion,
             currentAnswer = "Because",
-        )
-        {}
+        ) {}
     }
 }
 
