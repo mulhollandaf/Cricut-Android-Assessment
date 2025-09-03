@@ -80,11 +80,11 @@ fun AssessmentScreen(
                         )
                     }
                     is MultipleSelectionQuestion -> {
-                        val currentAnswer = allAnswers[question.id] as? String ?: ""
+                        val currentAnswer = allAnswers[question.id] as? Set<String> ?: emptySet()
                         QuestionContent(
                             question = question,
-                            currentSelectedAnswers = currentAnswer.split(",").toSet(),
-                            onAnswerSelected = { viewModel.onAnswerChanged(question.id, it) }
+                            currentSelectedAnswers = currentAnswer,
+                            onAnswerSelected = { viewModel.onMultipleAnswersChanged(question.id, it) }
                         )
                     }
                     is OpenEndedQuestion -> {
@@ -279,6 +279,9 @@ private fun PreviewOpenEnded() {
 @Composable
 private fun PreviewAssessmentScreen() {
     AndroidAssessmentTheme {
-        AssessmentScreen()
+        // Manually create QuizRepo and QuizViewModel for the preview
+        val quizRepo = QuizRepo()
+        val quizViewModel = QuizViewModel(quizRepo)
+        AssessmentScreen(viewModel = quizViewModel)
     }
 }
